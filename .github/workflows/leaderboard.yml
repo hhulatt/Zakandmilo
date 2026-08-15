@@ -30,7 +30,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
       - name: Fetch latest wager totals
         if: env.RAINBET_API_KEY != ''
@@ -53,7 +53,11 @@ jobs:
           git commit -m "chore: refresh leaderboard data"
           git push origin HEAD:${{ github.ref_name }}
 
+      # enablement lets the first run turn Pages on itself instead of needing
+      # someone to flip it in Settings beforehand.
       - uses: actions/configure-pages@v5
+        with:
+          enablement: true
       - uses: actions/upload-pages-artifact@v3
         with:
           path: .
