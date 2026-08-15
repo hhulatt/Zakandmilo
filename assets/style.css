@@ -620,6 +620,22 @@ tr.is-you .lb__name::after {
   .topbar { justify-content: space-between; }
 }
 
+@media (max-width: 520px) {
+  /* Four units no longer fit on one line, and a lone "Seconds" on a second
+     row reads as broken — pair them into a 2x2 block instead. */
+  .countdown { display: grid; grid-template-columns: 1fr 1fr; }
+  .unit { min-width: 0; }
+
+  /* The prize column is the point of the board, so tighten the row until all
+     four columns fit rather than leaving prizes behind a sideways scroll. */
+  .lb { min-width: 0; }
+  .lb th, .lb td { padding: 0.75rem 0.5rem; font-size: 0.87rem; }
+  .lb th { font-size: 0.62rem; letter-spacing: 0.08em; }
+  .lb__rank { width: 26px; height: 26px; font-size: 0.85rem; }
+  .lb__name { font-size: 0.82rem; }
+  tr.is-you .lb__name::after { display: block; margin: 0.25rem 0 0; width: fit-content; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
