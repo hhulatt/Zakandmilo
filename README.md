@@ -22,6 +22,9 @@ host picks up and redeploys.
 
 ## Hosting
 
+Live at **https://zakandmilo.com** (Netlify DNS, apex and `www` both pointed at
+Netlify's load balancers).
+
 The repo is private, so the site is served by **Netlify** (free tier, supports
 private repos) rather than GitHub Pages, which needs a public repo on a free
 GitHub plan. GitHub Actions only produces the data; Netlify only serves it.
