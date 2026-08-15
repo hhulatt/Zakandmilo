@@ -1,27 +1,27 @@
-name: Update leaderboard & deploy
+name: Refresh leaderboard
+
+# Pulls the current month's wager totals from Rainbet and commits the snapshot.
+# Netlify watches this branch and redeploys on the resulting push, so this
+# workflow only has to produce the data.
 
 on:
   # Cron is UTC. Europe/London is UTC+0 in winter and UTC+1 in summer, so both
   # entries are scheduled and whichever lands on UK midnight does the real work;
-  # the other is a harmless no-op refresh.
+  # the other is a harmless extra refresh.
   schedule:
     - cron: '2 0 * * *'   # 00:02 UTC — UK midnight during GMT (winter)
     - cron: '2 23 * * *'  # 23:02 UTC — UK midnight during BST (summer)
-  push:
-    branches: [claude/zakandmilo-rainbet-site-aq6zil]
   workflow_dispatch:
 
 permissions:
   contents: write
-  pages: write
-  id-token: write
 
 concurrency:
   group: leaderboard
   cancel-in-progress: false
 
 jobs:
-  build:
+  refresh:
     runs-on: ubuntu-latest
     env:
       RAINBET_API_KEY: ${{ secrets.RAINBET_API_KEY }}
@@ -32,14 +32,15 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Fetch latest wager totals
-        if: env.RAINBET_API_KEY != ''
-        run: node scripts/fetch-leaderboard.mjs
-
-      - name: Warn when the API key is missing
-        if: env.RAINBET_API_KEY == ''
+      - name: Check the API key is present
         run: |
-          echo "::warning::RAINBET_API_KEY secret is not set — deploying the committed snapshot without refreshing it."
+          if [ -z "$RAINBET_API_KEY" ]; then
+            echo "::error::RAINBET_API_KEY secret is not set — add it under Settings → Secrets and variables → Actions."
+            exit 1
+          fi
+
+      - name: Fetch latest wager totals
+        run: node scripts/fetch-leaderboard.mjs
 
       - name: Commit refreshed data
         run: |
@@ -52,22 +53,3 @@ jobs:
           git add data
           git commit -m "chore: refresh leaderboard data"
           git push origin HEAD:${{ github.ref_name }}
-
-      # enablement lets the first run turn Pages on itself instead of needing
-      # someone to flip it in Settings beforehand.
-      - uses: actions/configure-pages@v5
-        with:
-          enablement: true
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: .
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@v4

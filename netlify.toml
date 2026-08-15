@@ -1,0 +1,23 @@
+# Static site — nothing to compile, publish the repo root as-is.
+[build]
+  publish = "."
+  command = ""
+
+# The leaderboard snapshot is rewritten every midnight, so it must never be
+# served from cache. Everything else is fingerprint-free but small.
+[[headers]]
+  for = "/data/*"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=3600"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
