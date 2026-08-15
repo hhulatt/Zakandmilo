@@ -1,0 +1,69 @@
+name: Update leaderboard & deploy
+
+on:
+  # Cron is UTC. Europe/London is UTC+0 in winter and UTC+1 in summer, so both
+  # entries are scheduled and whichever lands on UK midnight does the real work;
+  # the other is a harmless no-op refresh.
+  schedule:
+    - cron: '2 0 * * *'   # 00:02 UTC — UK midnight during GMT (winter)
+    - cron: '2 23 * * *'  # 23:02 UTC — UK midnight during BST (summer)
+  push:
+    branches: [claude/zakandmilo-rainbet-site-aq6zil]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: leaderboard
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      RAINBET_API_KEY: ${{ secrets.RAINBET_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Fetch latest wager totals
+        if: env.RAINBET_API_KEY != ''
+        run: node scripts/fetch-leaderboard.mjs
+
+      - name: Warn when the API key is missing
+        if: env.RAINBET_API_KEY == ''
+        run: |
+          echo "::warning::RAINBET_API_KEY secret is not set — deploying the committed snapshot without refreshing it."
+
+      - name: Commit refreshed data
+        run: |
+          if [ -z "$(git status --porcelain data)" ]; then
+            echo "No leaderboard changes."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data
+          git commit -m "chore: refresh leaderboard data"
+          git push origin HEAD:${{ github.ref_name }}
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

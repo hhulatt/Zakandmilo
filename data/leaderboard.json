@@ -1,0 +1,61 @@
+{
+  "month": "2026-08",
+  "periodStart": "2026-08-01",
+  "periodEnd": "2026-08-31",
+  "timezone": "Europe/London",
+  "prizePool": 2500,
+  "prizes": [
+    1000,
+    500,
+    300,
+    200,
+    150,
+    100,
+    80,
+    70,
+    60,
+    40
+  ],
+  "boardSize": 25,
+  "totalWagered": 1101.82,
+  "playerCount": 5,
+  "cacheUpdatedAt": "2026-08-15 19:38:33",
+  "updatedAt": "2026-08-15T19:41:04.947Z",
+  "entries": [
+    {
+      "rank": 1,
+      "masked": "mr******ms",
+      "hash": "67ff7b444b8dd6ad",
+      "wagered": 416.92,
+      "prize": 1000
+    },
+    {
+      "rank": 2,
+      "masked": "el*******lz",
+      "hash": "d74f92f78b22a302",
+      "wagered": 377.5,
+      "prize": 500
+    },
+    {
+      "rank": 3,
+      "masked": "te**y0",
+      "hash": "d2b4e61793b085b6",
+      "wagered": 135.17,
+      "prize": 300
+    },
+    {
+      "rank": 4,
+      "masked": "jo*********AK",
+      "hash": "386e880074183401",
+      "wagered": 126.68,
+      "prize": 200
+    },
+    {
+      "rank": 5,
+      "masked": "Ha**********nd",
+      "hash": "0361919e7c2a86f6",
+      "wagered": 45.55,
+      "prize": 150
+    }
+  ]
+}

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Zak &amp; Milo — $2,500 Monthly Rainbet Wager Leaderboard</title>
+<meta name="description" content="Play on Rainbet with code ZAKANDMILO and compete for a $2,500 prize pool every single month. Live leaderboard, updated daily.">
+<meta property="og:title" content="Zak &amp; Milo — $2,500 Monthly Wager Leaderboard">
+<meta property="og:description" content="Use code ZAKANDMILO on Rainbet. $2,500 split across the top 10 wagerers every month.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#05070f">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏆</text></svg>">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div class="glow glow--blue" aria-hidden="true"></div>
+<div class="glow glow--red" aria-hidden="true"></div>
+
+<header class="topbar">
+  <a class="brand" href="#top"><span class="brand__z">ZAK</span><span class="brand__amp">&amp;</span><span class="brand__m">MILO</span></a>
+  <nav class="topnav">
+    <a href="#leaderboard">Leaderboard</a>
+    <a href="#prizes">Prizes</a>
+    <a href="#how">How to enter</a>
+    <a href="#socials">Socials</a>
+  </nav>
+  <a class="btn btn--red btn--sm" href="https://rainbet.com/?r=zakandmilo" target="_blank" rel="noopener nofollow">Play on Rainbet</a>
+</header>
+
+<main id="top">
+  <section class="hero">
+    <p class="eyebrow"><span class="pulse"></span> Live monthly competition</p>
+    <h1>$2,500<span class="hero__sub">Monthly Wager Leaderboard</span></h1>
+    <p class="hero__lede">Wager on <strong>Rainbet</strong> under code <strong>ZAKANDMILO</strong> and climb the board. The top 10 wagerers split <strong>$2,500</strong> — every single month, resetting automatically.</p>
+
+    <div class="codebox">
+      <div class="codebox__label">Affiliate code</div>
+      <div class="codebox__row">
+        <code id="promo-code">ZAKANDMILO</code>
+        <button class="btn btn--ghost" id="copy-code" type="button" data-code="ZAKANDMILO">Copy</button>
+      </div>
+    </div>
+
+    <div class="hero__cta">
+      <a class="btn btn--red btn--lg" href="https://rainbet.com/?r=zakandmilo" target="_blank" rel="noopener nofollow">Join Rainbet →</a>
+      <a class="btn btn--blue btn--lg" href="#leaderboard">View leaderboard</a>
+    </div>
+  </section>
+
+  <section class="countdown-wrap" aria-labelledby="countdown-title">
+    <h2 id="countdown-title" class="countdown__title">Leaderboard resets in</h2>
+    <div class="countdown" id="countdown" role="timer" aria-live="off">
+      <div class="unit"><span class="unit__num" id="cd-days">--</span><span class="unit__label">Days</span></div>
+      <div class="unit"><span class="unit__num" id="cd-hours">--</span><span class="unit__label">Hours</span></div>
+      <div class="unit"><span class="unit__num" id="cd-mins">--</span><span class="unit__label">Minutes</span></div>
+      <div class="unit"><span class="unit__num" id="cd-secs">--</span><span class="unit__label">Seconds</span></div>
+    </div>
+    <p class="countdown__note">Current period: <strong id="period-label">—</strong> · Resets at midnight UK time on the 1st</p>
+  </section>
+
+  <section class="stats" aria-label="Competition stats">
+    <div class="stat"><span class="stat__num">$2,500</span><span class="stat__label">Prize pool</span></div>
+    <div class="stat"><span class="stat__num">10</span><span class="stat__label">Paid places</span></div>
+    <div class="stat"><span class="stat__num" id="stat-players">—</span><span class="stat__label">Players competing</span></div>
+    <div class="stat"><span class="stat__num" id="stat-wagered">—</span><span class="stat__label">Wagered this month</span></div>
+  </section>
+
+  <section id="leaderboard" class="board">
+    <div class="section-head">
+      <h2>This month's leaderboard</h2>
+      <p class="section-sub">Usernames are partially hidden to protect player privacy. Search below to find your own position.</p>
+    </div>
+
+    <div class="podium" id="podium" aria-label="Top three wagerers"></div>
+
+    <div class="search">
+      <label class="search__label" for="search-input">Find your position</label>
+      <div class="search__row">
+        <input id="search-input" type="search" autocomplete="off" spellcheck="false"
+               placeholder="Enter your exact Rainbet username…" aria-describedby="search-result">
+        <button class="btn btn--blue" id="search-btn" type="button">Search</button>
+      </div>
+      <p id="search-result" class="search__result" role="status" aria-live="polite"></p>
+    </div>
+
+    <div class="table-wrap">
+      <table class="lb">
+        <caption class="visually-hidden">Monthly wager leaderboard</caption>
+        <thead>
+          <tr><th scope="col">Rank</th><th scope="col">Player</th><th scope="col" class="num">Wagered</th><th scope="col" class="num">Prize</th></tr>
+        </thead>
+        <tbody id="lb-body">
+          <tr class="lb__empty"><td colspan="4">Loading leaderboard…</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="updated">Last updated <span id="updated-at">—</span> · Refreshed automatically every midnight UK time</p>
+  </section>
+
+  <section id="prizes" class="prizes">
+    <div class="section-head">
+      <h2>Prize breakdown</h2>
+      <p class="section-sub">$2,500 shared across the top 10 wagerers, paid at the end of every month.</p>
+    </div>
+    <ol class="prize-grid" id="prize-grid"></ol>
+  </section>
+
+  <section id="how" class="how">
+    <div class="section-head"><h2>How to enter</h2></div>
+    <ol class="steps">
+      <li><span class="steps__n">1</span><h3>Sign up to Rainbet</h3><p>Create your account using affiliate code <strong>ZAKANDMILO</strong> — or join through our link so it's applied automatically.</p></li>
+      <li><span class="steps__n">2</span><h3>Wager as normal</h3><p>Every dollar you wager under the code counts towards your monthly total. No sign-up form, no minimum.</p></li>
+      <li><span class="steps__n">3</span><h3>Climb the board</h3><p>The board refreshes every midnight UK time straight from Rainbet's official affiliate API.</p></li>
+      <li><span class="steps__n">4</span><h3>Get paid</h3><p>Top 10 at the end of the month share the $2,500. Winners are announced live on Kick.</p></li>
+    </ol>
+    <a class="btn btn--red btn--lg" href="https://rainbet.com/?r=zakandmilo" target="_blank" rel="noopener nofollow">Claim code ZAKANDMILO →</a>
+  </section>
+
+  <section id="socials" class="socials">
+    <div class="section-head"><h2>Follow Zak &amp; Milo</h2><p class="section-sub">Catch the streams and the giveaways.</p></div>
+
+    <a class="social social--kick" href="https://kick.com/zakandmilo" target="_blank" rel="noopener">
+      <span class="social__tag">Together on Kick</span>
+      <span class="social__handle">kick.com/zakandmilo</span>
+      <span class="social__go">Watch live →</span>
+    </a>
+
+    <div class="social-cols">
+      <div class="social-col social-col--blue">
+        <h3>Zak</h3>
+        <a class="social social--ig" href="https://instagram.com/zak_phillips__" target="_blank" rel="noopener">
+          <span class="social__tag">Instagram</span><span class="social__handle">@zak_phillips__</span>
+        </a>
+        <a class="social social--tt" href="https://tiktok.com/@zakpfx" target="_blank" rel="noopener">
+          <span class="social__tag">TikTok</span><span class="social__handle">@zakpfx</span>
+        </a>
+      </div>
+      <div class="social-col social-col--red">
+        <h3>Milo</h3>
+        <a class="social social--ig" href="https://instagram.com/milo7w" target="_blank" rel="noopener">
+          <span class="social__tag">Instagram</span><span class="social__handle">@milo7w</span>
+        </a>
+        <a class="social social--tt" href="https://tiktok.com/@milowestwoood" target="_blank" rel="noopener">
+          <span class="social__tag">TikTok</span><span class="social__handle">@milowestwoood</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="history" id="history" hidden>
+    <div class="section-head"><h2>Previous winners</h2></div>
+    <div class="history__controls">
+      <label class="visually-hidden" for="history-select">Choose a month</label>
+      <select id="history-select"></select>
+    </div>
+    <div class="table-wrap">
+      <table class="lb lb--history">
+        <thead><tr><th scope="col">Rank</th><th scope="col">Player</th><th scope="col" class="num">Wagered</th><th scope="col" class="num">Prize</th></tr></thead>
+        <tbody id="history-body"></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <p class="footer__brand">ZAK <span>&amp;</span> MILO</p>
+  <p class="footer__legal"><strong>18+ only.</strong> Gambling can be addictive — please play responsibly and never wager more than you can afford to lose. This leaderboard is run by Zak &amp; Milo and is not operated by Rainbet. Wager totals come from Rainbet's official affiliate API and are final at the end of each month.</p>
+  <p class="footer__legal">Need support? <a href="https://www.begambleaware.org/" target="_blank" rel="noopener">BeGambleAware.org</a> · <a href="https://www.gamcare.org.uk/" target="_blank" rel="noopener">GamCare</a></p>
+  <p class="footer__meta">Leaderboard data refreshed automatically every midnight UK time.</p>
+</footer>
+
+<script src="assets/app.js"></script>
+</body>
+</html>
