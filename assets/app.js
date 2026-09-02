@@ -5,6 +5,8 @@
   'use strict';
 
   const TZ = 'Europe/London';
+  /** Cycles open on the 13th and close on the 12th of the following month. */
+  const CYCLE_START_DAY = 13;
   const DATA_URL = 'data/leaderboard.json';
   const HISTORY_INDEX_URL = 'data/history/index.json';
 
@@ -50,16 +52,25 @@
     return { year: get('year'), month: get('month'), day: get('day') };
   }
 
-  /** Midnight on the 1st of next month — when the board wipes and pays out. */
+  /** Midnight on the next 13th — when the board wipes and pays out. */
   function nextResetTs() {
-    const { year, month } = zonedToday();
-    return month === 12 ? zonedMidnight(year + 1, 1, 1) : zonedMidnight(year, month + 1, 1);
+    const { year, month, day } = zonedToday();
+    if (day < CYCLE_START_DAY) return zonedMidnight(year, month, CYCLE_START_DAY);
+    return month === 12
+      ? zonedMidnight(year + 1, 1, CYCLE_START_DAY)
+      : zonedMidnight(year, month + 1, CYCLE_START_DAY);
   }
 
-  function monthLabel(monthId) {
-    const [y, m] = monthId.split('-').map(Number);
-    return new Date(Date.UTC(y, m - 1, 1))
-      .toLocaleDateString('en-GB', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+  /** "13 Aug - 12 Sep 2026", dropping the year on the start when both match. */
+  function periodLabel(startISO, endISO) {
+    const start = new Date(`${startISO}T00:00:00Z`);
+    const end = new Date(`${endISO}T00:00:00Z`);
+    const fmt = (d, opts) => d.toLocaleDateString('en-GB', { timeZone: 'UTC', ...opts });
+    const sameYear = start.getUTCFullYear() === end.getUTCFullYear();
+    const from = fmt(start, sameYear
+      ? { day: 'numeric', month: 'short' }
+      : { day: 'numeric', month: 'short', year: 'numeric' });
+    return `${from} \u2013 ${fmt(end, { day: 'numeric', month: 'short', year: 'numeric' })}`;
   }
 
   /* ---------- Countdown ------------------------------------------------ */
@@ -145,7 +156,7 @@
 
   function renderBoard(data) {
     board = data;
-    $('period-label').textContent = monthLabel(data.month);
+    $('period-label').textContent = periodLabel(data.periodStart, data.periodEnd);
     $('stat-players').textContent = data.playerCount.toLocaleString('en-GB');
     $('stat-wagered').textContent = money.format(data.totalWagered);
     $('updated-at').textContent = new Date(data.updatedAt)
@@ -251,47 +262,69 @@
     setTimeout(() => { copyBtn.textContent = 'Copy'; }, 2000);
   });
 
-  /* ---------- Previous months ------------------------------------------ */
+  /* ---------- Previous cycle winners ----------------------------------- */
 
+  /* Populated from the archived snapshot of each closed cycle. Until the first
+     cycle ends the section stays hidden rather than showing an empty table. */
   async function loadHistory() {
-    let months = [];
+    let cycles = [];
     try {
-      const res = await fetch(HISTORY_INDEX_URL, { cache: 'no-store' });
+      const res = await fetch(`${HISTORY_INDEX_URL}?v=${Date.now()}`, { cache: 'no-store' });
       if (!res.ok) return;
-      months = (await res.json()).months || [];
+      cycles = (await res.json()).cycles || [];
     } catch { return; }
-    if (!months.length) return;
+    if (!cycles.length) return;
 
-    const section = $('history');
     const select = $('history-select');
-    select.innerHTML = months
-      .map((m) => `<option value="${m}">${monthLabel(m)}</option>`).join('');
-    section.hidden = false;
+    select.innerHTML = cycles
+      .map((c) => `<option value="${c.id}">${periodLabel(c.start, c.end)}</option>`).join('');
+    // A single closed cycle leaves nothing to choose between.
+    select.hidden = cycles.length < 2;
+    $('history').hidden = false;
 
-    async function showMonth(monthId) {
+    async function showCycle(id) {
+      const champ = $('history-champion');
       const body = $('history-body');
       body.innerHTML = `<tr class="lb__empty"><td colspan="4">Loading…</td></tr>`;
       try {
-        const res = await fetch(`data/history/${monthId}.json`, { cache: 'no-store' });
+        const res = await fetch(`data/history/${id}.json`, { cache: 'no-store' });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const past = await res.json();
         const winners = past.entries.filter((e) => e.prize > 0);
-        body.innerHTML = winners.length
-          ? winners.map((e) => `
-              <tr class="is-top">
-                <td><span class="lb__rank">${e.rank}</span></td>
-                <td class="lb__name">${escapeHtml(e.masked)}</td>
-                <td class="num">${moneyExact.format(e.wagered)}</td>
-                <td class="num lb__prize">${money.format(e.prize)}</td>
-              </tr>`).join('')
-          : `<tr class="lb__empty"><td colspan="4">No winners recorded for this month.</td></tr>`;
+
+        if (!winners.length) {
+          champ.innerHTML = '';
+          body.innerHTML = `<tr class="lb__empty"><td colspan="4">No winners recorded for this cycle.</td></tr>`;
+          return;
+        }
+
+        const [first] = winners;
+        champ.innerHTML = `
+          <div class="champion">
+            <span class="champion__crown">👑</span>
+            <span class="champion__body">
+              <span class="champion__tag">Champion · ${escapeHtml(periodLabel(past.periodStart, past.periodEnd))}</span>
+              <span class="champion__name">${escapeHtml(first.masked)}</span>
+              <span class="champion__meta">${moneyExact.format(first.wagered)} wagered</span>
+            </span>
+            <span class="champion__prize">${money.format(first.prize)}</span>
+          </div>`;
+
+        body.innerHTML = winners.map((e) => `
+          <tr class="is-top">
+            <td><span class="lb__rank">${e.rank}</span></td>
+            <td class="lb__name">${escapeHtml(e.masked)}</td>
+            <td class="num">${moneyExact.format(e.wagered)}</td>
+            <td class="num lb__prize">${money.format(e.prize)}</td>
+          </tr>`).join('');
       } catch {
-        body.innerHTML = `<tr class="lb__empty"><td colspan="4">Could not load this month.</td></tr>`;
+        champ.innerHTML = '';
+        body.innerHTML = `<tr class="lb__empty"><td colspan="4">Could not load this cycle.</td></tr>`;
       }
     }
 
-    select.addEventListener('change', () => showMonth(select.value));
-    showMonth(months[0]);
+    select.addEventListener('change', () => showCycle(select.value));
+    showCycle(cycles[0].id);
   }
 
   loadBoard();

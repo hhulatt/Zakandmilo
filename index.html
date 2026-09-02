@@ -40,7 +40,7 @@
   <section class="hero">
     <p class="eyebrow"><span class="pulse"></span> Live monthly competition</p>
     <h1>$2,500<span class="hero__sub">Monthly Wager Leaderboard</span></h1>
-    <p class="hero__lede">Wager on <strong>Rainbet</strong> under code <strong>ZAKANDMILO</strong> and climb the board. The top 10 wagerers split <strong>$2,500</strong> — every single month, resetting automatically.</p>
+    <p class="hero__lede">Wager on <strong>Rainbet</strong> under code <strong>ZAKANDMILO</strong> and climb the board. The top 10 wagerers split <strong>$2,500</strong> — every single cycle, resetting on the 13th automatically.</p>
 
     <div class="codebox">
       <div class="codebox__label">Affiliate code</div>
@@ -64,19 +64,19 @@
       <div class="unit"><span class="unit__num" id="cd-mins">--</span><span class="unit__label">Minutes</span></div>
       <div class="unit"><span class="unit__num" id="cd-secs">--</span><span class="unit__label">Seconds</span></div>
     </div>
-    <p class="countdown__note">Current period: <strong id="period-label">—</strong> · Resets at midnight UK time on the 1st</p>
+    <p class="countdown__note">Current period: <strong id="period-label">—</strong> · Resets at midnight UK time on the 13th</p>
   </section>
 
   <section class="stats" aria-label="Competition stats">
     <div class="stat"><span class="stat__num">$2,500</span><span class="stat__label">Prize pool</span></div>
     <div class="stat"><span class="stat__num">10</span><span class="stat__label">Paid places</span></div>
     <div class="stat"><span class="stat__num" id="stat-players">—</span><span class="stat__label">Players competing</span></div>
-    <div class="stat"><span class="stat__num" id="stat-wagered">—</span><span class="stat__label">Wagered this month</span></div>
+    <div class="stat"><span class="stat__num" id="stat-wagered">—</span><span class="stat__label">Wagered this cycle</span></div>
   </section>
 
   <section id="leaderboard" class="board">
     <div class="section-head">
-      <h2>This month's leaderboard</h2>
+      <h2>Current leaderboard</h2>
       <p class="section-sub">Usernames are partially hidden to protect player privacy. Search below to find your own position.</p>
     </div>
 
@@ -106,10 +106,28 @@
     <p class="updated">Last updated <span id="updated-at">—</span> · Refreshed automatically every midnight UK time</p>
   </section>
 
+  <section class="history" id="history" hidden>
+    <div class="section-head">
+      <h2>Last cycle's winners</h2>
+      <p class="section-sub">Final standings from the cycle that just closed, straight from Rainbet.</p>
+    </div>
+    <div id="history-champion"></div>
+    <div class="history__controls">
+      <label class="visually-hidden" for="history-select">Choose a cycle</label>
+      <select id="history-select"></select>
+    </div>
+    <div class="table-wrap">
+      <table class="lb lb--history">
+        <thead><tr><th scope="col">Rank</th><th scope="col">Player</th><th scope="col" class="num">Wagered</th><th scope="col" class="num">Prize</th></tr></thead>
+        <tbody id="history-body"></tbody>
+      </table>
+    </div>
+  </section>
+
   <section id="prizes" class="prizes">
     <div class="section-head">
       <h2>Prize breakdown</h2>
-      <p class="section-sub">$2,500 shared across the top 10 wagerers, paid at the end of every month.</p>
+      <p class="section-sub">$2,500 shared across the top 10 wagerers, paid at the end of every cycle.</p>
     </div>
     <ol class="prize-grid" id="prize-grid"></ol>
   </section>
@@ -118,9 +136,9 @@
     <div class="section-head"><h2>How to enter</h2></div>
     <ol class="steps">
       <li><span class="steps__n">1</span><h3>Sign up to Rainbet</h3><p>Create your account using affiliate code <strong>ZAKANDMILO</strong> — or join through our link so it's applied automatically.</p></li>
-      <li><span class="steps__n">2</span><h3>Wager as normal</h3><p>Every dollar you wager under the code counts towards your monthly total. No sign-up form, no minimum.</p></li>
+      <li><span class="steps__n">2</span><h3>Wager as normal</h3><p>Every dollar you wager under the code counts towards your cycle total. No sign-up form, no minimum.</p></li>
       <li><span class="steps__n">3</span><h3>Climb the board</h3><p>The board refreshes every midnight UK time straight from Rainbet's official affiliate API.</p></li>
-      <li><span class="steps__n">4</span><h3>Get paid</h3><p>Top 10 at the end of the month share the $2,500. Winners are announced live on Kick.</p></li>
+      <li><span class="steps__n">4</span><h3>Get paid</h3><p>Top 10 at the close of each cycle share the $2,500. Winners are announced live on Kick.</p></li>
     </ol>
     <a class="btn btn--red btn--lg" href="https://rainbet.com/?r=zakandmilo" target="_blank" rel="noopener nofollow">Claim code ZAKANDMILO →</a>
   </section>
@@ -156,24 +174,11 @@
     </div>
   </section>
 
-  <section class="history" id="history" hidden>
-    <div class="section-head"><h2>Previous winners</h2></div>
-    <div class="history__controls">
-      <label class="visually-hidden" for="history-select">Choose a month</label>
-      <select id="history-select"></select>
-    </div>
-    <div class="table-wrap">
-      <table class="lb lb--history">
-        <thead><tr><th scope="col">Rank</th><th scope="col">Player</th><th scope="col" class="num">Wagered</th><th scope="col" class="num">Prize</th></tr></thead>
-        <tbody id="history-body"></tbody>
-      </table>
-    </div>
-  </section>
 </main>
 
 <footer class="footer">
   <p class="footer__brand">ZAK <span>&amp;</span> MILO</p>
-  <p class="footer__legal"><strong>18+ only.</strong> Gambling can be addictive — please play responsibly and never wager more than you can afford to lose. This leaderboard is run by Zak &amp; Milo and is not operated by Rainbet. Wager totals come from Rainbet's official affiliate API and are final at the end of each month.</p>
+  <p class="footer__legal"><strong>18+ only.</strong> Gambling can be addictive — please play responsibly and never wager more than you can afford to lose. This leaderboard is run by Zak &amp; Milo and is not operated by Rainbet. Wager totals come from Rainbet's official affiliate API and are final at the close of each cycle.</p>
   <p class="footer__legal">Need support? <a href="https://www.begambleaware.org/" target="_blank" rel="noopener">BeGambleAware.org</a> · <a href="https://www.gamcare.org.uk/" target="_blank" rel="noopener">GamCare</a></p>
   <p class="footer__meta">Leaderboard data refreshed automatically every midnight UK time.</p>
 </footer>

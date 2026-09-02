@@ -5,8 +5,8 @@ $2,500 monthly wager competition. Static HTML/CSS/JS — no build step, no frame
 
 ## How it works
 
-`scripts/fetch-leaderboard.mjs` calls Rainbet's affiliate API for the current calendar
-month, masks every username, and writes `data/leaderboard.json`. The page reads that
+`scripts/fetch-leaderboard.mjs` calls Rainbet's affiliate API for the current
+competition cycle, masks every username, and writes `data/leaderboard.json`. The page reads that
 static file, so **the API key is never exposed to a browser**. A scheduled GitHub Action
 re-runs the script every midnight UK time and commits the refreshed snapshot, which the
 host picks up and redeploys.
@@ -16,7 +16,7 @@ host picks up and redeploys.
 | Page | `index.html`, `assets/style.css`, `assets/app.js` |
 | Data fetcher | `scripts/fetch-leaderboard.mjs` |
 | Current board | `data/leaderboard.json` |
-| Closed months | `data/history/YYYY-MM.json`, `data/history/index.json` |
+| Closed cycles | `data/history/YYYY-MM-13.json`, `data/history/index.json` |
 | Data refresh | `.github/workflows/leaderboard.yml` |
 | Host config | `netlify.toml` |
 
@@ -50,8 +50,17 @@ midnight cron -> Action fetches Rainbet API -> commits data/leaderboard.json
 
 - **Prize pool:** $2,500 across the top 10, defined by `PRIZES` in the fetch script.
   `[1000, 500, 300, 200, 150, 100, 80, 70, 60, 40]`
-- **Period:** one calendar month, resetting at midnight `Europe/London` on the 1st.
-  The on-page countdown targets the same instant and handles BST/GMT.
+- Cycle boundaries come from `CYCLE_START_DAY` in the fetch script and the
+  matching constant in `assets/app.js`; both must change together.
+- **Period:** a cycle runs from the **13th of one month to the 12th of the next**,
+  resetting at midnight `Europe/London` on the 13th. Cycles deliberately do not
+  align with calendar months. The end day is always the 12th, which exists in
+  every month, so there are no month-length edge cases. The on-page countdown
+  targets the same instant and handles BST/GMT.
+- **Previous winners:** when a cycle closes, the next run fetches its final
+  totals and writes `data/history/<start-date>.json`. Closed totals never change,
+  so an existing archive is never refetched. The section hides itself until at
+  least one cycle has closed.
 - Changing `PRIZES` updates the leaderboard, the prize breakdown, and the search
   result copy together — the page renders all three from the JSON.
 

@@ -578,9 +578,56 @@ tr.is-you .lb__name::after {
 .social--ig:hover { border-color: #e1306c; box-shadow: 0 0 30px rgba(225, 48, 108, 0.22); }
 .social--tt:hover { border-color: #25f4ee; box-shadow: 0 0 30px rgba(37, 244, 238, 0.2); }
 
-/* ---------- History ---------- */
+/* ---------- Previous cycle winners ---------- */
 .history { margin-top: 5rem; }
 .history__controls { text-align: center; margin-bottom: 1.5rem; }
+.history__controls select[hidden] { display: none; }
+
+/* The outright winner leads the section; the table below carries the rest. */
+.champion {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  max-width: 640px;
+  margin: 0 auto 1.8rem;
+  padding: 1.4rem 1.6rem;
+  border: 1px solid rgba(255, 201, 60, 0.45);
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(255, 201, 60, 0.14), rgba(255, 45, 85, 0.07));
+  box-shadow: 0 0 50px rgba(255, 201, 60, 0.14);
+}
+.champion__crown { font-size: 2.4rem; line-height: 1; }
+.champion__body { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; }
+.champion__tag {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--muted);
+}
+.champion__name {
+  font-family: var(--font-display);
+  font-size: clamp(1.2rem, 4vw, 1.7rem);
+  font-weight: 700;
+  color: #fff;
+  word-break: break-all;
+}
+.champion__meta { font-size: 0.88rem; color: var(--muted); }
+.champion__prize {
+  margin-left: auto;
+  padding: 0.5rem 1.1rem;
+  border-radius: 999px;
+  background: rgba(255, 201, 60, 0.16);
+  color: var(--gold);
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+@media (max-width: 520px) {
+  .champion { flex-wrap: wrap; gap: 0.9rem; padding: 1.2rem; }
+  .champion__prize { margin-left: 0; width: 100%; text-align: center; }
+}
 .history__controls select {
   padding: 0.7rem 1rem;
   border: 1px solid var(--line);

@@ -1,7 +1,10 @@
 #!/usr/bin/env node
 /**
- * Pulls the Rainbet affiliate wager totals for the current month, masks the
- * usernames, and writes the static JSON the site reads.
+ * Pulls the Rainbet affiliate wager totals for the current competition cycle,
+ * masks the usernames, and writes the static JSON the site reads.
+ *
+ * A cycle runs from the 13th of one month to the 12th of the next, so it does
+ * not line up with calendar months.
  *
  * Endpoint: GET /v1/external/affiliates?start_at=YYYY-MM-DD&end_at=YYYY-MM-DD&key=...
  * Response: { affiliates: [{ username, id, wagered_amount }], cache_updated_at }
@@ -18,6 +21,8 @@ const TZ = 'Europe/London';
 const PRIZES = [1000, 500, 300, 200, 150, 100, 80, 70, 60, 40];
 /** Rows rendered before the "show all" toggle. Every player is still shipped so search can find them. */
 const BOARD_SIZE = 25;
+/** Cycles open on this day of the month and close the day before the next one opens. */
+const CYCLE_START_DAY = 13;
 
 const KEY = process.env.RAINBET_API_KEY;
 if (!KEY) {
@@ -36,18 +41,43 @@ function todayInTz() {
 
 const pad = (n) => String(n).padStart(2, '0');
 
-/** Inclusive first/last calendar day of the given month. */
-function monthRange(year, month) {
-  const lastDay = new Date(Date.UTC(year, month, 0)).getUTCDate();
+function previousMonth(year, month) {
+  return month === 1 ? { year: year - 1, month: 12 } : { year, month: month - 1 };
+}
+
+function nextMonth(year, month) {
+  return month === 12 ? { year: year + 1, month: 1 } : { year, month: month + 1 };
+}
+
+/**
+ * The cycle opening on the 13th of the given month. It closes on the 12th of
+ * the following month, which exists in every month, so there are no
+ * month-length edge cases to handle.
+ */
+function cycleStartingIn(year, month) {
+  const end = nextMonth(year, month);
+  const start = `${year}-${pad(month)}-${pad(CYCLE_START_DAY)}`;
   return {
-    id: `${year}-${pad(month)}`,
-    start: `${year}-${pad(month)}-01`,
-    end: `${year}-${pad(month)}-${pad(lastDay)}`,
+    id: start,
+    start,
+    end: `${end.year}-${pad(end.month)}-${pad(CYCLE_START_DAY - 1)}`,
   };
 }
 
-function previousMonth(year, month) {
-  return month === 1 ? { year: year - 1, month: 12 } : { year, month: month - 1 };
+/** The cycle a given date falls inside. Before the 13th, that is last month's. */
+function cycleContaining({ year, month, day }) {
+  if (day < CYCLE_START_DAY) {
+    const prev = previousMonth(year, month);
+    return cycleStartingIn(prev.year, prev.month);
+  }
+  return cycleStartingIn(year, month);
+}
+
+/** The cycle that closed immediately before the given one. */
+function cycleBefore(cycle) {
+  const [y, m] = cycle.start.split('-').map(Number);
+  const prev = previousMonth(y, m);
+  return cycleStartingIn(prev.year, prev.month);
 }
 
 /**
@@ -66,7 +96,7 @@ function searchHash(name) {
   return createHash('sha256').update(name.trim().toLowerCase()).digest('hex').slice(0, 16);
 }
 
-async function fetchMonth({ start, end }) {
+async function fetchCycle({ start, end }) {
   const url = `${ENDPOINT}?start_at=${start}&end_at=${end}&key=${encodeURIComponent(KEY)}`;
   const res = await fetch(url, { headers: { accept: 'application/json' } });
   const body = await res.text();
@@ -82,7 +112,7 @@ async function fetchMonth({ start, end }) {
   return json;
 }
 
-function buildBoard(payload, range) {
+function buildBoard(payload, cycle) {
   const rows = payload.affiliates
     .map((a) => ({ username: String(a.username ?? ''), wagered: Number(a.wagered_amount) }))
     .filter((a) => a.username && Number.isFinite(a.wagered) && a.wagered > 0)
@@ -97,9 +127,10 @@ function buildBoard(payload, range) {
   }));
 
   return {
-    month: range.id,
-    periodStart: range.start,
-    periodEnd: range.end,
+    cycle: cycle.id,
+    periodStart: cycle.start,
+    periodEnd: cycle.end,
+    cycleStartDay: CYCLE_START_DAY,
     timezone: TZ,
     prizePool: PRIZES.reduce((a, b) => a + b, 0),
     prizes: PRIZES,
@@ -120,36 +151,40 @@ async function writeJson(path, data) {
   console.log(`wrote ${path}`);
 }
 
-const { year, month } = todayInTz();
-const current = monthRange(year, month);
-const board = buildBoard(await fetchMonth(current), current);
+const current = cycleContaining(todayInTz());
+const board = buildBoard(await fetchCycle(current), current);
 await writeJson(join(ROOT, 'data', 'leaderboard.json'), board);
-console.log(`${board.month}: ${board.playerCount} players, $${board.totalWagered} wagered`);
+console.log(`${current.start}..${current.end}: ${board.playerCount} players, $${board.totalWagered} wagered`);
 
-// Archive the month that just closed so the site can show previous winners.
-const prev = previousMonth(year, month);
-const prevRange = monthRange(prev.year, prev.month);
-const archivePath = join(ROOT, 'data', 'history', `${prevRange.id}.json`);
+// Archive the cycle that just closed so the site can show its winners. Once a
+// cycle is over its totals are final, so an existing archive is never refetched.
+const previous = cycleBefore(current);
+const archivePath = join(ROOT, 'data', 'history', `${previous.id}.json`);
 if (await exists(archivePath)) {
-  console.log(`${prevRange.id} already archived`);
+  console.log(`${previous.id} already archived`);
 } else {
   try {
-    const previousBoard = buildBoard(await fetchMonth(prevRange), prevRange);
+    const previousBoard = buildBoard(await fetchCycle(previous), previous);
     if (previousBoard.playerCount > 0) {
       await writeJson(archivePath, previousBoard);
     } else {
-      console.log(`${prevRange.id} has no wagers, skipping archive`);
+      console.log(`${previous.start}..${previous.end} has no wagers, nothing to archive`);
     }
   } catch (err) {
-    console.warn(`could not archive ${prevRange.id}: ${err.message}`);
+    console.warn(`could not archive ${previous.id}: ${err.message}`);
   }
 }
 
-// Index of archived months, newest first, so the site can list past winners.
+// Index of closed cycles, newest first, so the site can list past winners.
 const historyDir = join(ROOT, 'data', 'history');
-const archived = (await readdir(historyDir))
-  .filter((f) => /^\d{4}-\d{2}\.json$/.test(f))
+const cycles = (await readdir(historyDir))
+  .filter((f) => /^\d{4}-\d{2}-\d{2}\.json$/.test(f))
   .map((f) => f.replace('.json', ''))
   .sort()
-  .reverse();
-await writeJson(join(historyDir, 'index.json'), { months: archived });
+  .reverse()
+  .map((id) => {
+    const [y, m] = id.split('-').map(Number);
+    const { start, end } = cycleStartingIn(y, m);
+    return { id, start, end };
+  });
+await writeJson(join(historyDir, 'index.json'), { cycles });
