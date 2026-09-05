@@ -1,6 +1,6 @@
 name: Refresh leaderboard
 
-# Pulls the current month's wager totals from Rainbet and commits the snapshot.
+# Pulls the current cycle's wager totals from Rainbet and commits the snapshot.
 # Netlify watches this branch and redeploys on the resulting push, so this
 # workflow only has to produce the data.
 
